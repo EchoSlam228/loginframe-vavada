@@ -12,6 +12,8 @@ public class Game2 implements Game {//кости
     private static long id_user;
     private static int counterGames = -1;//количество сыгранных партий юзера
 
+    private static int countersecondround=0;
+
     static int bone1 = 0;
     static int bone2 = 0;
 
@@ -76,6 +78,18 @@ public class Game2 implements Game {//кости
 
     }
 
+    private void commonSum(){
+        bone1 = (int) (1 + Math.random() * 6);
+        bone2 = (int) (1 + Math.random() * 6);
+        while (true) {
+            if ((bone1 + bone2) != 7) break;
+            else {
+                bone1 = (int) (1 + Math.random() * 6);
+                bone2 = (int) (1 + Math.random() * 6);
+            }
+        }
+    }
+
     private void makeSum(int sum1) {
         bone1 = (int) (1 + Math.random() * 6);
         bone2 = (int) (1 + Math.random() * 6);
@@ -112,8 +126,10 @@ public class Game2 implements Game {//кости
 
     public void btndrop1(Bot bot, int bid) throws TelegramApiException, InterruptedException, IOException, SQLException {
         int bank = bot.getConnectToDB().selectById(id_user, "bank");
-        bone1 = (int) (1 + Math.random() * 6);
-        bone2 = (int) (1 + Math.random() * 6);
+        if (counterGames==0&&bid==2109) makeSum(2,3,12);
+        else if (counterGames==1&&bid==1010) makeSum();
+        else if (counterGames==2&&bid==574)makeSum(7,11);
+        else commonSum();
         Thread.sleep(1000);
         bot.sendMsg(id_user, "Бросаю...!", null);
         Thread.sleep(500);
@@ -130,25 +146,28 @@ public class Game2 implements Game {//кости
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
                 bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid * 2);
+                counterGames++;
             }
             case 2, 3, 12 -> {
                 bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + (bone1 + bone2) + ".\n", bot.getButtonsInline(GAME2RESTART));
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
+                counterGames=0;
             }
             default -> {
                 bot.sendMsg(id_user, "Вы проходите во 2 раунд! Выпало число - " + (bone1 + bone2) + "\n", bot.getButtonsInline(GAME2NEXT));
                 isSecondRound = true;
                 result = bone1 + bone2;
+                counterGames++;
             }
         }
     }
 
     public void btndrop2(Bot bot, int bid) throws SQLException, InterruptedException, TelegramApiException, IOException {
         int bank = bot.getConnectToDB().selectById(id_user, "bank");
-        bone1 = (int) (1 + Math.random() * 6);
-        bone2 = (int) (1 + Math.random() * 6);
+        if (counterGames==1&&bid==1010) makeSum(7);
+        else commonSum();
         Thread.sleep(1000);
         bot.sendMsg(id_user, "Бросаю...!", null);
         Thread.sleep(500);
@@ -161,34 +180,34 @@ public class Game2 implements Game {//кости
             bot.sendMsg(id_user, "Вы побeдили! Выпало число - " + (bone1 + bone2) + ".\n" +
                     "Ваш выигрыш - " + underline(bold(String.valueOf(bid))) + " RUB.\n" +
                     "Ваш баланс: " + (bank + bid) + " RUB", bot.getButtonsInline(GAME2RESTART));
-            counterGames = -1;
+            countersecondround = 0;
 
             bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
             bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid);
         } else if (bone1 + bone2 == 7) {
-            if (counterGames != 4) {
-                counterGames++;
+            if (countersecondround != 4) {
+                countersecondround++;
                 bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + (bone1 + bone2) + ".\n", bot.getButtonsInline(GAME2CHOICE));
             } else {
                 bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + (bone1 + bone2) + ".\n", bot.getButtonsInline(GAME2RESTART));
-                counterGames = -1;
+                countersecondround = 0;
             }
 
-            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+            //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
         } else {
-            if (counterGames != 4) {
+            if (countersecondround != 4) {
                 bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + (bone1 + bone2) + ".\n", bot.getButtonsInline(GAME2CHOICE));
-                counterGames++;
+                countersecondround++;
             } else {
                 bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + (bone1 + bone2) + ".\n", bot.getButtonsInline(GAME2RESTART));
-                counterGames = -1;
+                countersecondround = 0;
             }
 
-            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid * 0.5);
+            //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid * 0.5);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
         }

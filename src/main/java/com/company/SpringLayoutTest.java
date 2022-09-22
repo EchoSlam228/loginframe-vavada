@@ -13,10 +13,10 @@ import javax.swing.plaf.BorderUIResource;
 
 public class SpringLayoutTest {
 
-    public static String token = "5318901969:AAFQJaX5pwCk5_db69kyzKbDrERp1gLnetQ";
-    public static String namebot = "like9000bot";
-    public static String passbd = "98686666SSump";
-    public static String namebd = "abobaDataBase";
+    public static String token = "";
+    public static String namebot = "";
+    public static String passbd = "";
+    public static String namebd = "";
     public static String pkey = "";
     public static String skey = "";
 

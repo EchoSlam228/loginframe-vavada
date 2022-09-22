@@ -49,8 +49,8 @@ public class Game1 implements Game{//рандомное число
             } else {
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + (int) (50 + Math.random() * 50)+".\n"+
                         bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank+ " RUB", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
                 counterGames++;
@@ -81,8 +81,8 @@ public class Game1 implements Game{//рандомное число
 
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + (int) (0 + Math.random() * 50)+".\n"+
                         bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank + " RUB", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
                 counterGames++;
@@ -116,8 +116,8 @@ public class Game1 implements Game{//рандомное число
                 }
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + underline(bold(String.valueOf(num)))+".\n"+
                         bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank + " RUB", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
                 counterGames++;

@@ -12,7 +12,6 @@ public class Game4 implements Game{
 
     private static long id_user;
     private static int counterGames = -1;//количество сыгранных партий юзера
-    static int result=1;
     @Override
     public void setCounterGames(int counterGames) {
         Game4.counterGames = counterGames;
@@ -46,19 +45,20 @@ public class Game4 implements Game{
 
     public void btnleft(Bot bot) throws SQLException, IOException, TelegramApiException {
         int bank = bot.getConnectToDB().selectById(id_user, "bank");
-        if (result ==1){
+        if (counterGames==0&&bid==1274||counterGames==3&&bid==910){
+            bank+=bid*2;
             bot.sendMsg(id_user, "Орел! Вы побeдили!\n" +
-                    "Ваш баланс: " + (bank + bid+bid) + " RUB", bot.getButtonsInline(GAME4RESTART));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid+bid);
+                    "Ваш баланс: " + bank + " RUB", bot.getButtonsInline(GAME4RESTART));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid*2);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
-            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid+bid);
+            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid*2);
 
             counterGames++;
         }else {
             bot.sendMsg(id_user, "Решка! Вы проиграли!\n" +
-                    "Ваш баланс: " + (bank - bid) + " RUB", bot.getButtonsInline(GAME4RESTART));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                    "Ваш баланс: " + bank+ " RUB", bot.getButtonsInline(GAME4RESTART));
+            //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
 
@@ -67,18 +67,19 @@ public class Game4 implements Game{
     }
     public void btnright(Bot bot) throws SQLException, IOException, TelegramApiException {
         int bank = bot.getConnectToDB().selectById(id_user, "bank");
-        if (result ==1){
+        if (counterGames==1&&bid==2001||counterGames==2&&bid==666||counterGames==4&&bid==1999){
+            bank+=bid*2;
             bot.sendMsg(id_user, "Решка! Вы побeдили!\n" +
-                    "Ваш баланс: " + (bank + bid+bid) + " RUB", bot.getButtonsInline(GAME4RESTART));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid+bid);
+                    "Ваш баланс: " + bank + " RUB", bot.getButtonsInline(GAME4RESTART));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid*2);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
-            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid+bid);
+            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid*2);
             counterGames++;
         }else {
             bot.sendMsg(id_user, "Орел! Вы проиграли!\n" +
-                    "Ваш баланс: " + (bank - bid) + " RUB", bot.getButtonsInline(GAME4RESTART));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                    "Ваш баланс: " + bank + " RUB", bot.getButtonsInline(GAME4RESTART));
+            //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
             counterGames=0;

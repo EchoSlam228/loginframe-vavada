@@ -190,6 +190,7 @@ public class Bot extends TelegramLongPollingBot {
         }
         if (btns == ENDGAME) {
             ReplyButton replyButton = new ReplyButton();
+            counterGames=-1;
             replyButton.One("Завершить игру");
             return replyButton.getKB();
         }
@@ -654,7 +655,7 @@ public class Bot extends TelegramLongPollingBot {
                     if (update.getCallbackQuery().getData().equals("Cтарт4"))game4.btnstart(this, getButtonsInline(GAME4LR));
                     if (update.getCallbackQuery().getData().equals("Орел"))game4.btnleft(this);
                     if (update.getCallbackQuery().getData().equals("Решка"))game4.btnright(this);
-                    if (update.getCallbackQuery().getData().equals("Начать заново"))game4.btnrestart(this);
+                    if (update.getCallbackQuery().getData().equals("Начать заново 4"))game4.btnrestart(this);
 
                     callback.setChatId(String.valueOf(message.getChatId()));
                     System.out.println("есть колбэк");
