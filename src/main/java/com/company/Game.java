@@ -8,7 +8,7 @@ public interface Game {
     void setCounterGames(int counterGames);
     int getCounterGames();
     void startgame(Bot bot, long id_user)throws TelegramApiException;
-    void btnstart(Bot bot, InlineKeyboardMarkup inlineKeyboardMarkup)throws TelegramApiException;
+    void btnstart(Bot bot, InlineKeyboardMarkup inlineKeyboardMarkup) throws TelegramApiException, InterruptedException;
 
 
 }

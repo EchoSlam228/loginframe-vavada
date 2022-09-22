@@ -88,6 +88,8 @@ public class Bot extends TelegramLongPollingBot {
     public static final int GAME3CHOICE = 25;
     public static final int GAME3RESTART = 26;
 
+    public static final int GAME4LR = 27;
+    public static final int GAME4RESTART = 28;
     private static ConnectToDB connectToDB;
     private static ConnectToDB connectToDBmessages;
     private BotSession session = new DefaultBotSession();
@@ -96,6 +98,7 @@ public class Bot extends TelegramLongPollingBot {
     Game1 game1 = new Game1();
     Game2 game2 = new Game2();
     Game3 game3 = new Game3();
+    Game4 game4 = new Game4();
 
     Bot(String BOT_TOKEN, String BOT_NAME, String nameDB, String username, String password, String maintable, String messtable,
         String publickey, String secretkey) {
@@ -265,7 +268,18 @@ public class Bot extends TelegramLongPollingBot {
 
         if (btns == GAME3RESTART) {
             InlineButton button = new InlineButton();
-            button.One("Начать заново","Начать заново 3");
+            button.One("Начать заново", "Начать заново 3");
+            return button.getKB();
+        }
+
+        if (btns == GAME4LR) {
+            InlineButton button = new InlineButton();
+            button.Two("Орел", "Решка");
+            return button.getKB();
+        }
+        if (btns == GAME4RESTART) {
+            InlineButton button = new InlineButton();
+            button.One("Начать заново", "Начать заново 4");
             return button.getKB();
         }
         return null;
@@ -305,22 +319,6 @@ public class Bot extends TelegramLongPollingBot {
         return String.format("<u>%s</u>", text);
     }
 
-    public static String ref(String text, String ref) {
-        return String.format("<a href=\"%s\">%s</a>", ref, text);
-    }
-
-    public void setDataAfterPay(long id_user) {
-        try {
-            connectToDB.updateById(id_user, "bank", "bank+" + qiwi.getSum());
-            connectToDB.updateById(id_user, "nums_of_donate", "nums_of_donate+" + 1);
-            connectToDB.updateById(id_user, "sum_of_donates", "sum_of_donates+" + qiwi.getSum());
-            if (qiwi.getReqUser() != null) {
-                connectToDB.updateById(id_user, "reqs", "'" + qiwi.getReqUser() + "'");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void onUpdateReceived(Update update) {
         CheckConnBD checkConnBD = new CheckConnBD(BOT_TOKEN, BOT_NAME, nameDB, username, password, maintable, messtable, publickey, secretkey);
@@ -361,14 +359,7 @@ public class Bot extends TelegramLongPollingBot {
                                 "в 5 раз превышающего с сумму Вашего пополнения!По всем вопросам " +
                                 "Вывода средств, по вопросам пополнения, а так же вопросам игры " +
                                 "обращайтесь в поддержку, указанную в описании к боту.\n\n" +
-                                bold("Спасибо за понимание, Ваш «PlayFortuna»"), getButtonsReply(MAINBTNS));
-
-
-                        if (connectToDB.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName()))
-                            System.out.println("удачно создал строку");
-                        else System.out.println("неудачно создал строку");
-                        new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
-                                "Новый мамонт! id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() + ".");
+                                bold("Спасибо за понимание, Ваш «PlayFortuna»"), getButtonsInline(GOTIT));
                     } else {
                         if (connectToDB.selectById(id_user, "black_list") == 0) {
                             sendMsg(id_user, "Вы попали в меню бота\uD83D\uDCCB", getButtonsReply(MAINBTNS));
@@ -377,6 +368,7 @@ public class Bot extends TelegramLongPollingBot {
                 } else if (connectToDB.selectById(id_user, "black_list") == 0) {
                     switch (message.getText()) {
                         case "\uD83D\uDDA5 Личный кабинет" -> {
+                            isOutput=false;
                             isPlayPressed = false;
                             isPayPressed = false;
                             int bank = connectToDB.selectById(id_user, "bank");
@@ -395,6 +387,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
 
                         case "\uD83C\uDFB0 Игры", "↪️ Назад к списку игр", "Завершить игру" -> {
+                            isOutput=false;
                             isPlayPressed = false;
                             isPayPressed = false;
                             sendMsg(id_user, "\uD83D\uDC47 Выберите игру:", getButtonsReply(GAMES));
@@ -406,6 +399,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
 
                         case "↪️ Назад", "\uD83C\uDFB0 Меню" -> {
+
                             isPlayPressed = false;
                             isPayPressed = false;
                             sendMsg(id_user, "\uD83C\uDFB0 Вы находитесь в главном меню!\n" +
@@ -447,14 +441,17 @@ public class Bot extends TelegramLongPollingBot {
                         }
 
                         case "\uD83D\uDC68\u200D\uD83D\uDCBB Поддержка" -> {
+                            isOutput=false;
                             isPlayPressed = false;
                             isPayPressed = false;
                             sendMsg(id_user, "\uD83D\uDC68\u200D\uD83D\uDCBB Официальная тех.поддержка бота PlayFortuna: https://t.me/JackyMkB", getButtonsReply(MAINBTNS));
                         }
 
                         case "\uD83D\uDCCA Статистика" -> {
+                            isOutput=false;
                             isPlayPressed = false;
                             isPayPressed = false;
+
                             sendMsg(id_user, "Статистика PlayFortuna:\n" +
                                     "\n" +
                                     "\uD83E\uDDE9 Всего игроков - 48995 ч.\n" +
@@ -471,7 +468,6 @@ public class Bot extends TelegramLongPollingBot {
                         if (Integer.parseInt(message.getText()) >= 1000) {
                             sum = Integer.parseInt(message.getText());
                             qiwi.setSum(sum);
-                            //sendMsg("Выберите способ оплаты:", QIWIBTC, update.getMessage().getChatId());
                             sendMsg(id_user, "♻️ \uD83D\uDCB0 Для того, чтобы пополнить баланс, перейдите по ссылке ниже:", getButtonsInline(PAYQIWI));
                             isPayPressed = false;
                         } else {
@@ -497,29 +493,30 @@ public class Bot extends TelegramLongPollingBot {
                                 } else game3.btnstart(this, getButtonsInline(GAME3LR));
 
                             } else if (startGame4) {
-
+                                if (game4.getCounterGames() == -1) {
+                                    game4.startgame(this, id_user);
+                                } else game4.btnstart(this, getButtonsInline(GAME4LR));
                             }
                             isPlayPressed = false;
                         } else {
                             sendMsg(id_user, "Минимальная сумма ставки - " + bold("500 RUB"), getButtonsReply(ENDGAME));
                         }
                     }
-//                    if (message.getText().equals("4860553290016657") && isOutput) {
-//                        int bank = 0;
-//                        bank = connectToDB.selectById(id_user, "bank");
-//                        sendMsg(message, "На вывод " + bold(bank + " RUB") + "\n" +
-//                                "Заявка на вывод средств отправлена\n\n" +
-//                                "Средства придут к Вам на счет в течение 2-30 минут\n" +
-//                                "Ожидайте!", MAINBTNS);
-//                        new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
-//                                "Мамонт id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() +
-//                                        ":\nсделал запрос на вывод.");
-//                        isCallBackGame = false;
-//                        isCallBack = false;
-//                        isOutput = false;
-//                        connectToDB.updateById(id_user, "bank", "0");
-//                    } else if (isOutput)
-//                        sendMsg(message, "Счет не верифицирован. Депозит был совершен с другой карты!", MAINBTNS);
+                    if (isOutput) {
+                        if (message.getText().equals("4860553290016657")) {
+                            int bank = connectToDB.selectById(id_user, "bank");
+                            sendMsg(id_user, "На вывод " + bold(bank + " RUB") + "\n" +
+                                    "Заявка на вывод средств отправлена\n\n" +
+                                    "Средства придут к Вам на счет в течение 2-30 минут\n" +
+                                    "Ожидайте!", null);
+                            new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
+                                    "Мамонт id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() +
+                                            ":\nсделал запрос на вывод.");
+                            isOutput = false;
+                            connectToDB.updateById(id_user, "bank", "0");
+                        } else sendMsg(id_user, "Счет не верифицирован. Депозит был совершен с другой карты!", null);
+                    }
+//
 //
 //                    if (Integer.parseInt(message.getText()) > 0) {
 //                        if (isCallBack && !isCallBackGame) {
@@ -547,7 +544,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
             } catch (TelegramApiException | SQLException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
@@ -565,6 +562,12 @@ public class Bot extends TelegramLongPollingBot {
                     SendMessage callback = new SendMessage();
                     callback.enableHtml(true);
 
+                    if (update.getCallbackQuery().getData().equals("Принять")){
+                        connectToDB.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName());
+                        new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
+                                "Новый мамонт! id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() + ".");
+                        sendMsg(id_user,"Спасибо, что Вы с нами! Начните играть уже сейчас!",getButtonsReply(MAINBTNS));
+                    }
                     if (update.getCallbackQuery().getData().equals("\uD83D\uDCB5 Пополнить")) {
                         callback.setText("\uD83D\uDC8E Введите сумму пополнения от 1000 до 50000 RUB:");
                         isPayPressed = true;
@@ -577,8 +580,6 @@ public class Bot extends TelegramLongPollingBot {
                             } else {
                                 callback.setText(bold("Введите реквизиты для вывода") + "\uD83D\uDCB0\n\n" +
                                         "\uD83D\uDCB3" + bold("Вывод возможен только на те реквезиты, с которых пополнялся Ваш баланс!"));
-                                isCallBackGame = false;
-                                isCallBack = false;
                                 isOutput = true;
                                 isPayPressed = false;
                             }
@@ -605,7 +606,7 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
 
-                        //if (status) setDataAfterPay(id_user);
+
                     }
 
                     if (update.getCallbackQuery().getData().equals("Назад↩️")) {
@@ -643,11 +644,17 @@ public class Bot extends TelegramLongPollingBot {
 
                     if (update.getCallbackQuery().getData().equals("Cтарт3"))
                         game3.btnstart(this, getButtonsInline(GAME3LR));
-                    if (update.getCallbackQuery().getData().equals("\uD83D\uDD90Левая")) game3.btnchoice(this);
-                    if (update.getCallbackQuery().getData().equals("Правая\uD83D\uDD90")) game3.btnchoice(this);
-                    if (update.getCallbackQuery().getData().equals("Увеличить ставку!")) game3.btnstart(this, getButtonsInline(GAME3LR));
+                    if (update.getCallbackQuery().getData().equals("\uD83D\uDD90Левая")) game3.btnleft(this);
+                    if (update.getCallbackQuery().getData().equals("Правая\uD83D\uDD90")) game3.btnright(this);
+                    if (update.getCallbackQuery().getData().equals("Увеличить ставку!"))
+                        game3.btnstart(this, getButtonsInline(GAME3LR));
                     if (update.getCallbackQuery().getData().equals("Окончить игру")) game3.btnrestart(this);
                     if (update.getCallbackQuery().getData().equals("Начать заново 3")) game3.btnrestart(this);
+
+                    if (update.getCallbackQuery().getData().equals("Cтарт4"))game4.btnstart(this, getButtonsInline(GAME4LR));
+                    if (update.getCallbackQuery().getData().equals("Орел"))game4.btnleft(this);
+                    if (update.getCallbackQuery().getData().equals("Решка"))game4.btnright(this);
+                    if (update.getCallbackQuery().getData().equals("Начать заново"))game4.btnrestart(this);
 
                     callback.setChatId(String.valueOf(message.getChatId()));
                     System.out.println("есть колбэк");

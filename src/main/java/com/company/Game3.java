@@ -12,9 +12,8 @@ public class Game3 implements Game{
     private static long id_user;
     private static int counterGames = -1;//количество сыгранных партий юзера
 
-    private static int result;
-    private static double coeff=0.1;
-
+    private static double coeff = 0.1;
+    static int result=1;
     @Override
     public void setCounterGames(int counterGames) {
         Game3.counterGames = counterGames;
@@ -49,24 +48,47 @@ public class Game3 implements Game{
 
     }
 
-    public void btnchoice(Bot bot) throws SQLException, IOException, TelegramApiException {
-        result=(int) (0 + Math.random() * 2);
+    public void btnleft(Bot bot) throws SQLException, IOException, TelegramApiException {
         int bank = bot.getConnectToDB().selectById(id_user, "bank");
-        if (result==1){
-            bot.sendMsg(id_user, "Вы побeдили! Выпало число - " + result + ".\n" +
-                    "Ваш выигрыш - " + underline(bold(String.valueOf(bid+bid*coeff))) + " RUB.\n" +
-                    "Ваш баланс: " + (bank + bid+bid*coeff) + " RUB", bot.getButtonsInline(GAME3CHOICE));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid+bid*coeff);
+        if (result ==1){
+            bot.sendMsg(id_user, "Вы побeдили!\n" +
+                    "Ваш куш - " + underline(bold(String.valueOf(bid+bid* coeff))) + " RUB оказался в левой руке!\n" +
+                    "Ваш баланс: " + (bank + bid+bid* coeff) + " RUB", bot.getButtonsInline(GAME3CHOICE));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid+bid* coeff);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
-            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid+bid*coeff);
+            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid+bid* coeff);
+            coeff+=coeff;
             counterGames++;
         }else {
-            bot.sendMsg(id_user, "Вы проиграли! Выпало число - " + result + ".\n" +
-                    "Ваш баланс: " + (bank - bid*coeff) + " RUB", bot.getButtonsInline(GAME3RESTART));
-            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid*coeff);
+            bot.sendMsg(id_user, "Вы проиграли! Ваш куш был в правой руке..\n" +
+                    "Ваш баланс: " + (bank - bid* coeff) + " RUB", bot.getButtonsInline(GAME3RESTART));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid* coeff);
             bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
             bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
+            coeff=0.1;
+            counterGames=0;
+        }
+    }
+    public void btnright(Bot bot) throws SQLException, IOException, TelegramApiException {
+        int bank = bot.getConnectToDB().selectById(id_user, "bank");
+        if (result ==1){
+            bot.sendMsg(id_user, "Вы побeдили!\n" +
+                    "Ваш куш - " + underline(bold(String.valueOf(bid+bid* coeff))) + " RUB оказался в правой руке!\n" +
+                    "Ваш баланс: " + (bank + bid+bid* coeff) + " RUB", bot.getButtonsInline(GAME3CHOICE));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid+bid* coeff);
+            bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
+            bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
+            bot.getConnectToDB().updateById(id_user, "win_bank", "win_bank+" + bid+bid* coeff);
+            coeff+=coeff;
+            counterGames++;
+        }else {
+            bot.sendMsg(id_user, "Вы проиграли! Ваш куш был в левой руке..\n" +
+                    "Ваш баланс: " + (bank - bid* coeff) + " RUB", bot.getButtonsInline(GAME3RESTART));
+            bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid* coeff);
+            bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
+            bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
+            coeff=0.1;
             counterGames=0;
         }
     }
