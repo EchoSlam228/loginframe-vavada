@@ -7,10 +7,11 @@ import java.util.List;
 public class ReplyButton implements Button {
     private final List<KeyboardRow> keyboardRowList = new ArrayList<>();
     private final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+
     public ReplyButton() {
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(false);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
     }
 
     public ReplyKeyboardMarkup getKB(){
@@ -21,6 +22,7 @@ public class ReplyButton implements Button {
         KeyboardRow keyboardRow1 = new KeyboardRow();
         keyboardRow1.add(new KeyboardButton(text));
         keyboardRowList.add(keyboardRow1);
+
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
     }
 

@@ -1,18 +1,20 @@
 package com.company;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import static com.company.Bot.*;
 import static com.company.Bot.underline;
 public class Game1 implements Game{//рандомное число
     private static long id_user;
     private static int counterGames = -1;//количество сыгранных партий юзера
-    public void startgame (Bot bot, long id_user) throws TelegramApiException {
+    public void startgame (Bot bot, long id_user) throws TelegramApiException, IOException {
 
         Game1.id_user = id_user;
         InlineButton btn = new InlineButton();
         btn.One("Старт!","Cтарт1");
-        bot.sendPhoto(id_user, "src/main/resources/Images/game1.jpg", "Добро пожаловать в игру "+italic(bold("\"Рандомное число\"!"))+" \n" +
+        bot.sendPhoto(id_user, "https://ibb.co/304MQWR", "Добро пожаловать в игру "+italic(bold("\"Рандомное число\"!"))+" \n" +
                 underline("Правила игры:\n") +
                 underline("1")+". Вы должны угадать, какое число загадал бот: "+italic("больше")+ " или "+ italic("меньше")+ " 50.\n" +
                 underline("2")+". В случае, если Вы угадали число - получаете удвоенную сумму своей ставки на счет; если не угадали - теряете сумму ставки.\n" +
@@ -34,11 +36,11 @@ public class Game1 implements Game{//рандомное число
     public void btnlittlefifty(Bot bot, int bid){
         try {
             int bank = bot.getConnectToDB().selectById(id_user, "bank");
-            if (counterGames == 0 && bid == 550 || counterGames == 1 && bid == 2009) {
+            if (bid == 550 ||bid == 2009) {
                 bot.sendMsg(id_user,"Вы побeдили! Выпало число - " + underline(bold(String.valueOf((int) (0 + Math.random() * 50))))+".\n"+
                         "Ваш выигрыш - "+underline(bold(String.valueOf(bid*2)))+" RUB.\n"+
-                        bold("Введите сумму ставки \uD83D\uDD25\n") +
                         "Ваш баланс: " + (bank + bid * 2) + " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
                 bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid * 2);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
@@ -46,14 +48,15 @@ public class Game1 implements Game{//рандомное число
                 if (counterGames == 4) counterGames = 0;
                 else counterGames++;
                 Bot.setIsPlayPressed(true);
+
             } else {
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + (int) (50 + Math.random() * 50)+".\n"+
-                        bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank+ " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
-                counterGames++;
+                counterGames=0;
                 Bot.setIsPlayPressed(true);
             }
         } catch (TelegramApiException | SQLException e) {
@@ -63,12 +66,12 @@ public class Game1 implements Game{//рандомное число
     public void btnoverfifty(Bot bot, int bid){
         try {
             int bank = bot.getConnectToDB().selectById(id_user, "bank");
-            if (counterGames == 2 && bid == 1180 || counterGames == 4 && bid == 1500) {
+            if (bid == 1180 || bid == 1500) {
 
                 bot.sendMsg(id_user,"Вы побeдили! Выпало число - " + underline(bold(String.valueOf((int) (50 + Math.random() * 50))))+".\n"+
                         "Ваш выигрыш - "+underline(bold(String.valueOf(bid*2)))+" RUB.\n"+
-                        bold("Введите сумму ставки \uD83D\uDD25\n") +
                         "Ваш баланс: " + (bank + bid * 2) + " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
                 bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid * 2);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
@@ -80,12 +83,12 @@ public class Game1 implements Game{//рандомное число
             } else {
 
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + (int) (0 + Math.random() * 50)+".\n"+
-                        bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank + " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
-                counterGames++;
+                counterGames=0;
                 Bot.setIsPlayPressed(true);
             }
         } catch (TelegramApiException | SQLException e) {
@@ -95,13 +98,15 @@ public class Game1 implements Game{//рандомное число
     public void btnfifty (Bot bot, int bid){
         try {
             int bank = bot.getConnectToDB().selectById(id_user, "bank");
-            if (counterGames == 3 && bid == 1250) {
-                bot.sendMsg(id_user, bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank + bid * 30) + " RUB", null);
+            if (bid == 1250) {
+//                bot.sendMsg(id_user, bold("Введите сумму ставки \uD83D\uDD25\n") +
+//                        "Ваш баланс: " + (bank + bid * 30) + " RUB", null);
+
                 bot.sendMsg(id_user,"И ВЫ БЕРЕТЕ БОЛЬШОЙ КУШ! Выпало число -  50!\n"+
                         "Ваш выигрыш - "+underline(bold(String.valueOf(bid*30)))+" RUB.\n"+
                         bold("Введите сумму ставки \uD83D\uDD25\n") +
                         "Ваш баланс: " + (bank + bid * 30) + " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
                 bot.getConnectToDB().updateById(id_user, "bank", "bank+" + bid * 30);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "win_games", "win_games + 1");
@@ -115,12 +120,12 @@ public class Game1 implements Game{//рандомное число
                     num = (int) (0 + Math.random() * 100);
                 }
                 bot.sendMsg(id_user,"Вы проиграли! Выпало число - " + underline(bold(String.valueOf(num)))+".\n"+
-                        bold("Введите сумму ставки \uD83D\uDD25\n") +
-                        "Ваш баланс: " + (bank - bid) + " RUB", null);
-                bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
+                        "Ваш баланс: " + bank + " RUB", null);
+                bot.sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", null);
+                //bot.getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
                 bot.getConnectToDB().updateById(id_user, "all_games", "all_games + 1");
                 bot.getConnectToDB().updateById(id_user, "lost_games", "lost_games + 1");
-                counterGames++;
+                counterGames=0;
                 Bot.setIsPlayPressed(true);
             }
         } catch (TelegramApiException | SQLException e) {

@@ -107,7 +107,18 @@ public class ConnectToDB {
             return false;
         }
     }
+    public void createRowById(long id) throws SQLException {
+        Statement statement = getConn().createStatement();//создаю реакцию на события
+        try {
 
+            statement.executeUpdate("INSERT " + table +
+                    "(idtelegram,isCallBack,isOutput,counterGames,isPayPressed,isPlayPressed," +
+                    "startGame1,startGame2,startGame3,startGame4,sum,bid)" +
+                    "VALUES (" + id + ",0,0,0,0,0,0,0,0,0,0,0)");
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    }
     public void createRowById(long id, String namemamont, String message, String nametlg) throws SQLException {
         Statement statement = getConn().createStatement();//создаю реакцию на события
         try {

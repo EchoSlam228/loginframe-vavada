@@ -18,16 +18,16 @@ public class AdminPanel {
 
     private static final String color1 = "#171E27";
     private static final String color2 = "#043458";
-    private static CheckConnBD checkConnBD;
-    private static String username;
-    private static ConnectToDB connectToDB;
+    private static Bot bot;
+    private static ConnectToDB connectMain;
+    private static ConnectToDB connectMessages;
     private static final Font font = new Font("San Francisco", Font.PLAIN, 15);
     private static final JTextArea area = new JTextArea();
 
-    public AdminPanel(CheckConnBD checkConnBD) {
-        AdminPanel.checkConnBD = checkConnBD;
-        AdminPanel.username = checkConnBD.getNameBot();
-        AdminPanel.connectToDB = checkConnBD.getConnectToDB();
+    public AdminPanel(Bot bot, ConnectToDB connectMain, ConnectToDB connectMessages) {
+        AdminPanel.bot =bot;
+        AdminPanel.connectMain =connectMain;
+        AdminPanel.connectMessages =connectMessages;
     }
 
     public String whiteText(String text) {
@@ -46,7 +46,7 @@ public class AdminPanel {
 
     public void start() throws TelegramApiException {
 
-        JFrame frame = new JFrame("Бот "+username);
+        JFrame frame = new JFrame("Бот "+ bot.getBotName());
         //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         Container contentPane = frame.getContentPane();
@@ -64,24 +64,21 @@ public class AdminPanel {
         area.setFont(font);
         area.setForeground(Color.decode("#FFFFFF"));
         area.setEditable(false);
-        area.append("Сервер запущен " + goodDate() + ".\nРеквизиты - 4860553290016657.\n" +
+        area.append("Сервер запущен " + goodDate() + ".\nРеквизиты - 4276521648780025.\n" +
                 "Схема игры рандомные числа: ставит и жмет 550<50, 2009<50, 1180>50, 1250==50, 1500>50.\n" +
                 "Схема игры кости: ставит 2109 (проеб в 1 раунде),1010 (проеб во 2 раунде), \n574 (победа в 1 раунде, выиграет овер 15к).\n" +
                 "Схема игры руки: ставит и жмет 1679 левая, 1001 правая, 503 правая, 678 правая, 998 правая, 773 левая.\n" +
-                "Cхема игры орел и решка ебаная: ставит и жмет 1274 орел, 2001 решка, 666 решка, 910 орел, 1999 решка.");
+                "Cхема игры орел и решка ебаная: ставит и жмет 1274 орел, 2001 решка, 666 решка, 910 орел, 1999 решка.\n" +
+                "Если нажмешь крестик или сменить бота, прога ~50сек закрывается.");
 
         contentPane.add(new JScrollPane(area), BorderLayout.CENTER);
 
-        Bot bot = new Bot(checkConnBD.getTokenBot(), checkConnBD.getNameBot(), checkConnBD.getNameDB(),
-                checkConnBD.getUsername(), checkConnBD.getPassword(), checkConnBD.getMaintable(),
-                checkConnBD.getArhmesstable(), checkConnBD.getPublickey(), checkConnBD.getSecretkey());
-        bot.startbot();
         ArrayList<JButton> btns = new ArrayList<>();
         btns.add(new JButton("Инфа по id"));
         btns.get(0).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Поиск по id", "id:").createWindowMain(area, "idtelegram");
+                new ViaWindowCreater(connectMain, "Поиск по id", "id:").createWindowMain(area, "idtelegram");
 
             }
         });
@@ -89,7 +86,7 @@ public class AdminPanel {
         btns.get(1).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Поиск по имени", "Имя:").createWindowMain(area, "nametlg");
+                new ViaWindowCreater(connectMain, "Поиск по имени", "Имя:").createWindowMain(area, "nametlg");
 
             }
         });
@@ -97,28 +94,28 @@ public class AdminPanel {
         btns.get(2).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Поиск по id", "id:").createWindowMain(area, "messages");//здесь в col - название таблицы
+                new ViaWindowCreater(connectMain, "Поиск по id", "id:").createWindowMain(area, "messages");//здесь в col - название таблицы
             }
         });
         btns.add(new JButton("Изменить баланс по id"));
         btns.get(3).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Изменить баланс по id:", "Id:", "Сумма:").createWindowChange(area, "bank");
+                new ViaWindowCreater(connectMain, "Изменить баланс по id:", "Id:", "Сумма:").createWindowChange(area, "bank");
             }
         });
         btns.add(new JButton("Бан/разбан по id"));
         btns.get(4).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Поиск по id", "id:").createWindowMain(area, "black_list");
+                new ViaWindowCreater(connectMain, "Поиск по id", "id:").createWindowMain(area, "black_list");
             }
         });
         btns.add(new JButton("Реквизиты по id"));
         btns.get(5).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Поиск по id", "id:").createWindowMain(area, "reqs");
+                new ViaWindowCreater(connectMain, "Поиск по id", "id:").createWindowMain(area, "reqs");
 
             }
         });
@@ -126,7 +123,7 @@ public class AdminPanel {
         btns.get(6).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ViaWindowCreater(checkConnBD, "Изменить Qiwi-ключи", "Публичный ключ:", "Секретный ключ:", bot).createWindowChangeQiwi(area);
+                new ViaWindowCreater(connectMain, "Изменить Qiwi-ключи", "Публичный ключ:", "Секретный ключ:", bot).createWindowChangeQiwi(area);
             }
         });
         btns.add(new JButton("Сменить бота"));
@@ -139,12 +136,12 @@ public class AdminPanel {
                     ex.printStackTrace();
                 }
                 frame.dispose();
-                SpringLayoutTest.token = checkConnBD.getTokenBot();
-                SpringLayoutTest.namebot = checkConnBD.getNameBot();
-                SpringLayoutTest.passbd = checkConnBD.getPassword();
-                SpringLayoutTest.namebd = checkConnBD.getNameDB();
-                SpringLayoutTest.pkey = checkConnBD.getPublickey();
-                SpringLayoutTest.skey = checkConnBD.getSecretkey();
+                SpringLayoutTest.token = bot.getBotToken();
+                SpringLayoutTest.namebot = bot.getBotName();
+                SpringLayoutTest.passbd = bot.getPassword();
+                SpringLayoutTest.namebd = bot.getNameDB();
+                SpringLayoutTest.pkey = bot.getPublickey();
+                SpringLayoutTest.skey = bot.getSecretkey();
                 SpringLayoutTest.start();
             }
         });
@@ -286,6 +283,7 @@ public class AdminPanel {
 
             @Override
             public void windowClosing(WindowEvent e) {
+                area.append("Тут такой долбоебизм, надо подождать около 50 секунд, чтоб бот вырубился...)))");
                 try {
                     bot.closeAll();
                 } catch (SQLException ex) {
@@ -293,12 +291,12 @@ public class AdminPanel {
                 }
 
                 //frame.setVisible(false);
-                SpringLayoutTest.token = checkConnBD.getTokenBot();
-                SpringLayoutTest.namebot = checkConnBD.getNameBot();
-                SpringLayoutTest.passbd = checkConnBD.getPassword();
-                SpringLayoutTest.namebd = checkConnBD.getNameDB();
-                SpringLayoutTest.pkey = checkConnBD.getPublickey();
-                SpringLayoutTest.skey = checkConnBD.getSecretkey();
+                SpringLayoutTest.token = bot.getBotToken();
+                SpringLayoutTest.namebot = bot.getBotName();
+                SpringLayoutTest.passbd = bot.getPassword();
+                SpringLayoutTest.namebd = bot.getNameDB();
+                SpringLayoutTest.pkey = bot.getPublickey();
+                SpringLayoutTest.skey = bot.getSecretkey();
                 SpringLayoutTest.start();
 
             }

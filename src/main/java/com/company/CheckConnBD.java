@@ -36,7 +36,7 @@ public class CheckConnBD {
         this.arhmesstable = arhmesstable;
         this.publickey = publickey;
         this.secretkey = secretkey;
-        bot = new Bot(BOT_TOKEN, BOT_NAME, username, nameDB, password, maintable, arhmesstable, publickey, secretkey);
+        //bot = new Bot(BOT_TOKEN, BOT_NAME, username, nameDB, password, maintable, arhmesstable, publickey, secretkey);
         connectToDB = new ConnectToDB("jdbc:mysql://localhost:3306/" + nameDB, username, password, maintable);
     }
 

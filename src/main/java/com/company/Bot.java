@@ -3,132 +3,138 @@ package com.company;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.api.methods.send.SendDice;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;;
 import java.sql.SQLException;
-
+import java.text.ParseException;
+import java.util.Date;
 
 public class Bot extends TelegramLongPollingBot {
-    String BOT_TOKEN;
-    String BOT_NAME;
-    static String host = "localhost:3306";
-    static String nameDB;
-    static String username;
-    static String password;
-    static String maintable;
-    static String messtable;
+    private static String BOT_TOKEN;
+    private static String BOT_NAME;
+
+    private static String nameDB;
+    private static String username;
+    private static String password;
+    private static String maintable;
+    private static String messtable;
     static String qiwilink;
-    static String publickey;
-    static String secretkey;
+    private static String publickey;
+    private static String secretkey;
 
-    static boolean isCallBack = false;//флаг на введенную сумму депоизита
-    static boolean isCallBackGame = false;
-    static boolean isOutput = false;
+    static User user;
 
-    static boolean isUserPlay = false;//если юзер играет в числа
-    static int counterGames = 0;//количество сыгранных партий юзера
-    static boolean winwon = false;//прошла ставка или нет
+    public static void setIsPlayPressed(boolean isPlayPressed) throws SQLException {
+        if (isPlayPressed) user.setIsPlayPressed(1);
+        else user.setIsPlayPressed(0);
 
-    static boolean isPayPressed = false;
-
-    public static void setIsPlayPressed(boolean isPlayPressed) {
-        Bot.isPlayPressed = isPlayPressed;
     }
 
-    static boolean isPlayPressed = false;
-
-    private static boolean startGame1 = false;
-    private static boolean startGame2 = false;
-    private static boolean startGame3 = false;
-    private static boolean startGame4 = false;
-    static int sum = 0;
-    static int bid = 0;
 
     //дефайны реплай кнопок, в боте их три вида
     private static final int MAINBTNS = 0;//играть, инфа, лк
-    private static final int EXITGAME = 1;//закончить игру
-    private static final int BACK = 2;//числа, назад
     private static final int GAMES = 10;
     private static final int GAMESBACK = 11;
     private static final int ENDGAME = 12;
     //дефайны инлайн кнопок
     private static final int IO = 3;//пополнить,вывести
     public static final int GOTIT = 4;//принять
-    public static final int QIWIBTC = 5;//qiwi btc
     public static final int PAYQIWI = 6;//qiwi btc
-    public static final int PAYBTC = 7;//qiwi btc
+
     public static final int GAME1 = 8;
     public static final int GAME2RESTART = 9;
     public static final int GAME2NEXT = 20;
     public static final int GAME2DROP1 = 21;
     public static final int GAME2DROP2 = 22;
     public static final int GAME2CHOICE = 23;
-
     public static final int GAME3LR = 24;
     public static final int GAME3CHOICE = 25;
     public static final int GAME3RESTART = 26;
-
     public static final int GAME4LR = 27;
     public static final int GAME4RESTART = 28;
     private static ConnectToDB connectToDB;
     private static ConnectToDB connectToDBmessages;
-    private BotSession session = new DefaultBotSession();
-    //private final CheckConnBD checkConnBD = new CheckConnBD(BOT_TOKEN,BOT_NAME,nameDB,username,password,maintable,messtable,publickey,secretkey);
+    private static ConnectToDB connectToDBData;
+    private static BotSession session;
     public Qiwi qiwi = new Qiwi();
-    Game1 game1 = new Game1();
-    Game2 game2 = new Game2();
-    Game3 game3 = new Game3();
-    Game4 game4 = new Game4();
 
-    Bot(String BOT_TOKEN, String BOT_NAME, String nameDB, String username, String password, String maintable, String messtable,
-        String publickey, String secretkey) {
-        this.BOT_TOKEN = BOT_TOKEN;
-        this.BOT_NAME = BOT_NAME;
+
+    Bot(String BOT_TOKEN, String BOT_NAME, String nameDB, String username, String password,
+        String publickey, String secretkey, ConnectToDB connectToDB, ConnectToDB connectToDBmessages, ConnectToDB connectToDBData) {
+        Bot.BOT_TOKEN = BOT_TOKEN;
+        Bot.BOT_NAME = BOT_NAME;
         Bot.nameDB = nameDB;
         Bot.username = username;
         Bot.password = password;
-        Bot.maintable = maintable;
-        Bot.messtable = messtable;
+        Bot.connectToDB = connectToDB;
+        Bot.connectToDBmessages = connectToDBmessages;
+        Bot.connectToDBData = connectToDBData;
         Bot.publickey = publickey;
         Bot.secretkey = secretkey;
 
 
     }
 
+    public String getBotName() {
+        return BOT_NAME;
+    }
+
+    public String getNameDB() {
+        return nameDB;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getMaintable() {
+        return maintable;
+    }
+
+    public String getMesstable() {
+        return messtable;
+    }
+
+    public String getQiwilink() {
+        return qiwilink;
+    }
+
+    public String getPublickey() {
+        return publickey;
+    }
+
+    public String getSecretkey() {
+        return secretkey;
+    }
+
     public void startbot() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
-            Bot bot = new Bot(BOT_TOKEN, BOT_NAME, nameDB, username, password, maintable, messtable, publickey, secretkey);
-            session = telegramBotsApi.registerBot(bot);
+            session = new DefaultBotSession();
+            session = telegramBotsApi.registerBot(this);
+            System.out.println("bot ok");
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        connectToDB =
-                new ConnectToDB("jdbc:mysql://" + host + "/" + nameDB, username, password, maintable);
-        connectToDB.connect();
-        connectToDBmessages =
-                new ConnectToDB("jdbc:mysql://" + host + "/" + nameDB, username, password, messtable);
-        connectToDBmessages.connect();
+
     }
 
     public void setPublicKey(String key) {
@@ -168,7 +174,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
 
-    public ReplyKeyboardMarkup getButtonsReply(int btns) {
+    public ReplyKeyboardMarkup getButtonsReply(int btns) throws SQLException {
         if (btns == MAINBTNS) {
             ReplyButton replyButton = new ReplyButton();
             replyButton.Two("\uD83D\uDDA5 Личный кабинет", "\uD83C\uDFB0 Игры");
@@ -190,13 +196,14 @@ public class Bot extends TelegramLongPollingBot {
         }
         if (btns == ENDGAME) {
             ReplyButton replyButton = new ReplyButton();
+            user.setCounterGames(-1);
             replyButton.One("Завершить игру");
             return replyButton.getKB();
         }
         return null;
     }
 
-    public InlineKeyboardMarkup getButtonsInline(int btns) throws IOException {
+    public InlineKeyboardMarkup getButtonsInline(int btns) throws IOException, SQLException {
         if (btns == GOTIT) {
             InlineButton button = new InlineButton();
             button.One("Принять");
@@ -210,15 +217,16 @@ public class Bot extends TelegramLongPollingBot {
         }
         if (btns == PAYQIWI) {
             qiwi.refreshBuild();
-            qiwilink = qiwi.getPayLink(publickey, secretkey, sum, "RUB");
+            qiwilink = qiwi.getPayLink(publickey, secretkey, user.getSum(), "RUB");
             InlineButton button = new InlineButton();
             button.setLinkToBtn("\uD83D\uDCB0Перейти к оплате", qiwilink);
-            button.One("❓Проверить оплату");
+            //button.One("❓Проверить оплату");
             return button.getKB();
 
         }
         if (btns == GAME1) {
             InlineButton button = new InlineButton();
+
             button.One("<50");
             button.One("=50");
             button.One(">50");
@@ -295,16 +303,18 @@ public class Bot extends TelegramLongPollingBot {
         execute(sendMessage);
     }
 
-    public void sendPhoto(long id_user, String pathname, String caption, ReplyKeyboard replyKeyboard) throws TelegramApiException {
+    public void sendPhoto(long id_user, String pathname, String caption, ReplyKeyboard replyKeyboard) throws TelegramApiException, IOException {
+        URL url = new URL(pathname);
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(String.valueOf(id_user));
-        File file = new File(pathname);
-        InputFile photo = new InputFile(file);
+
+        InputFile photo = new InputFile(String.valueOf(url));
         sendPhoto.setPhoto(photo);
         sendPhoto.setParseMode("HTML");
         sendPhoto.setCaption(caption);
         sendPhoto.setReplyMarkup(replyKeyboard);
         execute(sendPhoto);
+
     }
 
     public static String bold(String text) {
@@ -319,23 +329,44 @@ public class Bot extends TelegramLongPollingBot {
         return String.format("<u>%s</u>", text);
     }
 
+    public boolean DeleteMessage(Update update) {
+        String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
+        Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+        DeleteMessage deleteMessage = new DeleteMessage(chatId, messageId);
+        try {
+            execute(deleteMessage);
+        } catch (TelegramApiException tae) {
+            throw new RuntimeException(tae);
+        }
+        return true;
+    }
 
     public void onUpdateReceived(Update update) {
-        CheckConnBD checkConnBD = new CheckConnBD(BOT_TOKEN, BOT_NAME, nameDB, username, password, maintable, messtable, publickey, secretkey);
-        AdminPanel panel = new AdminPanel(checkConnBD);
-        Message message;
+        AdminPanel panel = new AdminPanel(this, connectToDB, connectToDBmessages);
+        Message message = null;
+        long id_user = 0;
         if (update.hasMessage()) {
             message = update.getMessage();//получаю сообщение или команду юзера
+            id_user = message.getChatId();//получаю ид юзера;
+        } else if (update.hasCallbackQuery()) {
+            message = update.getCallbackQuery().getMessage();
+            id_user = message.getChatId();//получаю ид юзера
+        }
 
-            long id_user = message.getChatId();//получаю ид юзера
+        user = new User(connectToDBData, id_user);
+
+        if (update.hasMessage()) {
+
             try {
+                assert message != null;
                 connectToDBmessages.createRowById(id_user, message.getChat().getFirstName(), message.getText(), message.getChat().getUserName());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
             try {
                 if (message.getText().equals("/start")) {
-                    isOutput = false;
+                    //isOutput = false;
+                    user.setIsOutput(0);
                     int id = -1;
                     id = connectToDB.selectById(id_user, "idtelegram");
                     if (id == -1) {
@@ -344,22 +375,22 @@ public class Bot extends TelegramLongPollingBot {
                                 "1. Перед принятием инвестиционного решения Инвестору" +
                                 " необходимо самостоятельно оценить экономические риски и выгоды," +
                                 " налоговые, юридические, бухгалтерские последствия заключения сделки," +
-                                " свою готовность и возможность принять такие риски." +
+                                " свою готовность и возможность принять такие риски;" +
                                 " Клиент также несет расходы на оплату брокерских и депозитарных услуг\n" +
-                                "2. Принимая правила, Вы подтверждаете своё согласие со всеми вышеперечисленными правилами!\n" +
+                                "2. Принимая правила, Вы подтверждаете своё согласие со всеми вышеперечисленными правилами;\n" +
                                 "3. Ваш аккаунт может быть заблокирован в подозрении на мошенничество/обман нашей системы!" +
-                                " Каждому пользователю необходима верификация для вывода крупной суммы средств.\n" +
+                                " Каждому пользователю необходима верификация для вывода крупной суммы средств;\n" +
                                 "4. Мультиаккаунты запрещены;\n" +
                                 "5. Скрипты и схемы использовать запрещено;\n" +
-                                "6. Если будут выявлены вышеперчисленные случаи, Ваш аккаунт будет заморожен до выяснения обстоятельств!\n" +
-                                "7. В случае необходимости администрация имеет право запросить у Вас документы, подтверждающие Вашу личность и Ваше совершеннолетие.\n" +
-                                "Вы играете на виртуальные монеты, покупая их за настоящие деньги. " +
-                                "Любое пополнение бота является пожертвованием!  " +
-                                "Вывод денежных средств осуществляется только при достижении баланса, " +
-                                "в 5 раз превышающего с сумму Вашего пополнения!По всем вопросам " +
-                                "Вывода средств, по вопросам пополнения, а так же вопросам игры " +
+                                "6. Если будут выявлены вышеперчисленные случаи, Ваш аккаунт будет заморожен до выяснения обстоятельств;\n" +
+                                "7. В случае необходимости администрация имеет право запросить у Вас документы, подтверждающие Вашу личность и Ваше совершеннолетие;" +
+                                "вы играете на виртуальные монеты, покупая их за настоящие деньги;" +
+                                "Любое пополнение бота является пожертвованием; " +
+                                "по вопросам вывода средств, пополнения, а так же вопросам игры " +
                                 "обращайтесь в поддержку, указанную в описании к боту.\n\n" +
                                 bold("Спасибо за понимание, Ваш «PlayFortuna»"), getButtonsInline(GOTIT));
+                        connectToDB.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName());
+                        connectToDBData.createRowById(id_user);
                     } else {
                         if (connectToDB.selectById(id_user, "black_list") == 0) {
                             sendMsg(id_user, "Вы попали в меню бота\uD83D\uDCCB", getButtonsReply(MAINBTNS));
@@ -368,9 +399,13 @@ public class Bot extends TelegramLongPollingBot {
                 } else if (connectToDB.selectById(id_user, "black_list") == 0) {
                     switch (message.getText()) {
                         case "\uD83D\uDDA5 Личный кабинет" -> {
-                            isOutput=false;
-                            isPlayPressed = false;
-                            isPayPressed = false;
+                            user.setIsOutput(0);
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.setIsOutputSum(0);
+//                            isOutput=false;
+//                            isPlayPressed = false;
+//                            isPayPressed = false;
                             int bank = connectToDB.selectById(id_user, "bank");
                             int online = (int) (6000 + Math.random() * 200);
                             String text = "\uD83D\uDE4B\uD83C\uDFFB\u200D♀️ Ваш личный кабинет PlayFortuna:\n" +
@@ -382,26 +417,37 @@ public class Bot extends TelegramLongPollingBot {
                                     "\uD83E\uDDE9 Число человек онлайн : " + online + "ч.";
 
 
-                            sendPhoto(id_user, "src/main/resources/Images/playfortuna.jpg", text, getButtonsInline(IO));
+                            // sendPhoto(id_user, , text, getButtonsInline(IO));
+                            sendPhoto(id_user, "https://ibb.co/9Z88PjH", text, getButtonsInline(IO));
 
                         }
 
                         case "\uD83C\uDFB0 Игры", "↪️ Назад к списку игр", "Завершить игру" -> {
-                            isOutput=false;
-                            isPlayPressed = false;
-                            isPayPressed = false;
+                            user.setIsOutput(0);
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.setIsOutputSum(0);
+//                            isOutput=false;
+//                            isPlayPressed = false;
+//                            isPayPressed = false;
                             sendMsg(id_user, "\uD83D\uDC47 Выберите игру:", getButtonsReply(GAMES));
-                            startGame1 = false;
-                            startGame2 = false;
-                            startGame3 = false;
-                            startGame4 = false;
-                            game1.setCounterGames(-1);
+                            user.setStartGame1(0);
+                            user.setStartGame2(0);
+                            user.setStartGame3(0);
+                            user.setStartGame4(0);
+                            user.getGame1().setCounterGames(-1);
+//                            startGame1 = false;
+//                            startGame2 = false;
+//                            startGame3 = false;
+//                            startGame4 = false;
+//                            game1.setCounterGames(-1);
                         }
 
                         case "↪️ Назад", "\uD83C\uDFB0 Меню" -> {
-
-                            isPlayPressed = false;
-                            isPayPressed = false;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+//                            isPlayPressed = false;
+//                            isPayPressed = false;
                             sendMsg(id_user, "\uD83C\uDFB0 Вы находитесь в главном меню!\n" +
                                     "\n" +
                                     "\uD83D\uDC47  Выберите действие:", getButtonsReply(MAINBTNS));
@@ -409,112 +455,137 @@ public class Bot extends TelegramLongPollingBot {
 
 
                         case "\uD83C\uDFB1 Рандомное число" -> {
-                            isPlayPressed = false;
-                            isPayPressed = false;
-                            sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
-                            startGame1 = true;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            // sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
+                            user.setStartGame1(1);
+                            user.getGame1().startgame(this, id_user);
                         }
                         case "\uD83C\uDFB2 Кости" -> {
-                            isPlayPressed = false;
-                            isPayPressed = false;
-                            sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
-                            startGame2 = true;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.getGame2().startgame(this, id_user);
+                            //sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
+
+                            user.setStartGame2(1);
                         }
                         case "✊ Угадай руку" -> {
-                            isPlayPressed = false;
-                            isPayPressed = false;
-                            sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
-                            startGame3 = true;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.getGame3().startgame(this, id_user);
+                            //sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
+
+                            user.setStartGame3(1);
                         }
                         case "\uD83E\uDD39\u200D♀️ Орел & Решка" -> {
-                            isPlayPressed = false;
-                            isPayPressed = false;
-                            sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
-                            startGame4 = true;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.getGame4().startgame(this, id_user);
+                            //sendMsg(id_user, "\uD83D\uDC47 Выберите действие:", getButtonsReply(GAMESBACK));
+
+                            user.setStartGame4(1);
                         }
 
                         case "\uD83C\uDFB0 Играть" -> {
-                            isPlayPressed = true;
-                            isPayPressed = false;
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(1);
+
                             sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", getButtonsReply(ENDGAME));
 
                         }
 
                         case "\uD83D\uDC68\u200D\uD83D\uDCBB Поддержка" -> {
-                            isOutput=false;
-                            isPlayPressed = false;
-                            isPayPressed = false;
-                            sendMsg(id_user, "\uD83D\uDC68\u200D\uD83D\uDCBB Официальная тех.поддержка бота PlayFortuna: https://t.me/JackyMkB", getButtonsReply(MAINBTNS));
+                            user.setIsOutput(0);
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.setIsOutputSum(0);
+
+                            sendMsg(id_user, "\uD83D\uDC68\u200D\uD83D\uDCBB Официальная тех.поддержка бота PlayFortuna: " +
+                                    "https://t.me/Playfortuna_support", getButtonsReply(MAINBTNS));
                         }
 
                         case "\uD83D\uDCCA Статистика" -> {
-                            isOutput=false;
-                            isPlayPressed = false;
-                            isPayPressed = false;
+                            user.setIsOutput(0);
+                            user.setIsPayPressed(0);
+                            user.setIsPlayPressed(0);
+                            user.setIsOutputSum(0);
 
+                            GeneratorStata gener = new GeneratorStata(nameDB, username, password);
                             sendMsg(id_user, "Статистика PlayFortuna:\n" +
                                     "\n" +
-                                    "\uD83E\uDDE9 Всего игроков - 48995 ч.\n" +
+                                    "\uD83E\uDDE9 Всего игроков - " + gener.getPlayers() + " ч.\n" +
                                     "\n" +
-                                    "\uD83C\uDFB2 Выплачено - 8454344 ₽\n" +
+                                    "\uD83C\uDFB2 Выплачено - " + gener.getCash() + " ₽\n" +
                                     "\n" +
-                                    "⏱ Работаем - 801 д.", getButtonsReply(MAINBTNS));
+                                    "⏱ Работаем - " + gener.getDays() + " д.", getButtonsReply(MAINBTNS));
+                            gener.updateDate();
                         }
 
                     }
                 }
                 if (connectToDB.selectById(id_user, "black_list") == 0) {
-                    if (isPayPressed) {
+                    if (user.getIsPayPressed() == 1) {
                         if (Integer.parseInt(message.getText()) >= 1000) {
-                            sum = Integer.parseInt(message.getText());
-                            qiwi.setSum(sum);
+                            user.setSum(Integer.parseInt(message.getText()));
+                            qiwi.setSum(user.getSum());
                             sendMsg(id_user, "♻️ \uD83D\uDCB0 Для того, чтобы пополнить баланс, перейдите по ссылке ниже:", getButtonsInline(PAYQIWI));
-                            isPayPressed = false;
+//                            isPayPressed = false;
+                            user.setIsPayPressed(0);
                         } else {
                             sendMsg(id_user, "Минимальная сумма депозита - " + bold("1000 RUB"), getButtonsReply(MAINBTNS));
                         }
                     }
-                    if (isPlayPressed) {
+                    if (user.getIsPlayPressed() == 1) {
                         if (Integer.parseInt(message.getText()) >= 500) {
-                            bid = Integer.parseInt(message.getText());
-                            getConnectToDB().updateById(id_user, "bank", "bank-" + bid);
-                            if (startGame1) {
-                                if (game1.getCounterGames() == -1) {
-                                    game1.startgame(this, id_user);
-                                } else game1.btnstart(this, getButtonsInline(GAME1));
-                            } else if (startGame2) {
-                                if (game2.getCounterGames() == -1) {
-                                    game2.startgame(this, id_user);
-                                } else game2.btnstart(this, getButtonsInline(GAME2DROP1));
-
-                            } else if (startGame3) {
-                                if (game3.getCounterGames() == -1) {
-                                    game3.startgame(this, id_user);
-                                } else game3.btnstart(this, getButtonsInline(GAME3LR));
-
-                            } else if (startGame4) {
-                                if (game4.getCounterGames() == -1) {
-                                    game4.startgame(this, id_user);
-                                } else game4.btnstart(this, getButtonsInline(GAME4LR));
+                            int bank = getConnectToDB().selectById(id_user, "bank");
+                            user.setBid(Integer.parseInt(message.getText()));
+//                            bid = Integer.parseInt(message.getText());
+                            if (bank < user.getBid()) {
+                                sendMsg(id_user, "Ваш баланс меньше Вашей ставки!", null);
+                                user.setBid(0);
+                            } else {
+                                getConnectToDB().updateById(id_user, "bank", "bank-" + user.getBid());
+                                if (user.getStartGame1() == 1) user.getGame1().btnstart(this, getButtonsInline(GAME1));
+                                else if (user.getStartGame2() == 1)
+                                    user.getGame2().btnstart(this, getButtonsInline(GAME2DROP1));
+                                else if (user.getStartGame3() == 1)
+                                    user.getGame3().btnstart(this, getButtonsInline(GAME3LR));
+                                else if (user.getStartGame4() == 1)
+                                    user.getGame4().btnstart(this, getButtonsInline(GAME4LR));
+                                user.setIsPlayPressed(0);
                             }
-                            isPlayPressed = false;
+
                         } else {
                             sendMsg(id_user, "Минимальная сумма ставки - " + bold("500 RUB"), getButtonsReply(ENDGAME));
                         }
                     }
-                    if (isOutput) {
-                        if (message.getText().equals("4860553290016657")) {
+                    if (user.getIsOutput() == 1) {
+                        if (message.getText().equals("4276521648780025")) {
                             int bank = connectToDB.selectById(id_user, "bank");
-                            sendMsg(id_user, "На вывод " + bold(bank + " RUB") + "\n" +
+                            sendMsg(id_user, "На вывод " + bold(user.getBid() + " RUB") + "\n" +
                                     "Заявка на вывод средств отправлена\n\n" +
                                     "Средства придут к Вам на счет в течение 2-30 минут\n" +
                                     "Ожидайте!", null);
-                            new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
+                            new ViaWindowCreater(connectToDB).sendNotisToAdmminPanel(panel.getArea(),
                                     "Мамонт id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() +
                                             ":\nсделал запрос на вывод.");
-                            isOutput = false;
-                            connectToDB.updateById(id_user, "bank", "0");
+//                            isOutput = false;
+                            user.setIsOutput(0);
+                            connectToDB.updateById(id_user, "bank", "bank-" + user.getBid());
+                            user.setBid(0);
                         } else sendMsg(id_user, "Счет не верифицирован. Депозит был совершен с другой карты!", null);
+                    }
+                    if (user.getIsOutputSum() == 1) {
+                        int bank = getConnectToDB().selectById(id_user, "bank");
+                        user.setBid(Integer.parseInt(message.getText()));
+                        if (user.getBid() <= bank) {
+                            sendMsg(id_user, bold("Введите реквизиты для вывода") + "\uD83D\uDCB0\n\n" +
+                                    "\uD83D\uDCB3" + bold("Вывод возможен только на те реквизиты, с которых пополнялся Ваш баланс!"), null);
+                            user.setIsOutput(1);
+                            user.setIsOutputSum(0);
+
+                        } else sendMsg(id_user, "Недостаточно средств на балансе для вывода", null);
+
                     }
 //
 //
@@ -544,132 +615,203 @@ public class Bot extends TelegramLongPollingBot {
                 }
             } catch (TelegramApiException | SQLException e) {
                 e.printStackTrace();
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException | ParseException e) {
                 throw new RuntimeException(e);
             }
 
 
         } else if (update.hasCallbackQuery()) {
-            message = update.getCallbackQuery().getMessage();
-            long id_user = message.getChatId();//получаю ид юзера
-            try {
-                if (connectToDB.selectById(id_user, "black_list") == 0) {
-                    try {
-                        connectToDBmessages.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName(), update.getCallbackQuery().getData());
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    SendMessage callback = new SendMessage();
-                    callback.enableHtml(true);
 
-                    if (update.getCallbackQuery().getData().equals("Принять")){
-                        connectToDB.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName());
-                        new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
-                                "Новый мамонт! id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() + ".");
-                        sendMsg(id_user,"Спасибо, что Вы с нами! Начните играть уже сейчас!",getButtonsReply(MAINBTNS));
-                    }
-                    if (update.getCallbackQuery().getData().equals("\uD83D\uDCB5 Пополнить")) {
-                        callback.setText("\uD83D\uDC8E Введите сумму пополнения от 1000 до 50000 RUB:");
-                        isPayPressed = true;
-                        isCallBack = true;
-                    }
-                    if (update.getCallbackQuery().getData().equals("⏳Вывести")) {
+            if (update.getCallbackQuery().getData().equals("Принять")) {
+                assert message != null;
+                new ViaWindowCreater(connectToDB).sendNotisToAdmminPanel(panel.getArea(),
+                        "Новый мамонт! id: " + message.getChatId() + ", имя: " + message.getChat().getFirstName() + ".");
+                try {
+                    sendMsg(id_user, "Спасибо, что Вы с нами! Начните играть уже сейчас!", getButtonsReply(MAINBTNS));
+                } catch (TelegramApiException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                try {
+                    if (connectToDB.selectById(id_user, "black_list") == 0) {
                         try {
-                            if (connectToDB.selectById(id_user, "bank") == 0) {
-                                callback.setText("Ваш баланс равен 0 RUB, поэтому нечего выводить.");
-                            } else {
-                                callback.setText(bold("Введите реквизиты для вывода") + "\uD83D\uDCB0\n\n" +
-                                        "\uD83D\uDCB3" + bold("Вывод возможен только на те реквезиты, с которых пополнялся Ваш баланс!"));
-                                isOutput = true;
-                                isPayPressed = false;
-                            }
+                            assert message != null;
+                            connectToDBmessages.createRowById(id_user, message.getChat().getFirstName(), message.getChat().getUserName(), update.getCallbackQuery().getData());
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                    }
-                    if (update.getCallbackQuery().getData().equals("❓Проверить оплату")) {
-                        boolean status = qiwi.getStatusValue();
-                        if (!status) {
+                        SendMessage callback = new SendMessage();
+                        callback.enableHtml(true);
+
+
+                        if (update.getCallbackQuery().getData().equals("\uD83D\uDCB5 Пополнить")) {
+                            sendMsg(id_user, "\uD83D\uDC8E Введите сумму пополнения от 1000 до 50000 RUB:", null);
+                            DeleteMessage(update);
+//                            isPayPressed = true;
+//                            isCallBack = true;
+                            user.setIsPayPressed(1);
+                            user.setIsCallBack(1);
+                        }
+                        if (update.getCallbackQuery().getData().equals("⏳Вывести")) {
                             try {
-                                sendMsg(id_user, "Счет не оплачен, попробуйте проверить позже.", getButtonsReply(MAINBTNS));
-                            } catch (TelegramApiException e) {
+                                if (connectToDB.selectById(id_user, "bank") == 0) {
+                                    callback.setText("Недостаточно средств на балансе.");
+                                } else {
+                                    callback.setText(bold("Введите сумму, которую хотите вывести:"));
+//                                    isOutput = true;
+//                                    isPayPressed = false;
+                                    user.setIsPayPressed(0);
+                                    user.setIsOutputSum(1);
+                                }
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
-                        } else {
-                            try {
-                                sendMsg(id_user, "Оплата прошла успешно!\n\nПриятной игры! \uD83D\uDC9A", getButtonsReply(MAINBTNS));
-                                new ViaWindowCreater(checkConnBD).sendNotisToAdmminPanel(panel.getArea(),
-                                        "Мамонт id = " + connectToDB.selectById(id_user, "idtelegram") + ", имя - " +
-                                                message.getChat().getFirstName() + " задонатил " + String.valueOf(sum) + " rub.");
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("❓Проверить баланс")) {
+                            boolean status = qiwi.getStatusValue();
+                            if (!status) {
+                                try {
+                                    sendMsg(id_user, "Счет не оплачен, попробуйте проверить позже.", getButtonsReply(MAINBTNS));
+                                } catch (TelegramApiException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                try {
+                                    sendMsg(id_user, "Оплата прошла успешно!\n\nПриятной игры! \uD83D\uDC9A\n" +
+                                            "Ваш баланс: " + getConnectToDB().selectById(id_user, "bank"), getButtonsReply(MAINBTNS));
+                                    new ViaWindowCreater(connectToDB).sendNotisToAdmminPanel(panel.getArea(),
+                                            "Мамонт id = " + connectToDB.selectById(id_user, "idtelegram") + ", имя - " +
+                                                    message.getChat().getFirstName() + " задонатил " + user.getSum() + " rub.");
+                                    getConnectToDB().updateById(id_user, "bank", "bank+" + user.getSum());
+                                } catch (TelegramApiException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
 
+//                        if (update.getCallbackQuery().getData().equals("Назад↩️")) {
+//                            EditMessageText editMessageText = new EditMessageText();
+//                            editMessageText.setChatId(String.valueOf(id_user));
+//                            editMessageText.setMessageId(message.getMessageId());
+//                            editMessageText.setText("\uD83D\uDC8E Введите сумму пополнения от 1000 до 50000 RUB:");
+//                            try {
+//                                execute(editMessageText);
+//                            } catch (TelegramApiException e) {
+//                                e.printStackTrace();
+//                            }
+//                            user.setIsCallBack(1);
+////                            isCallBack = true;
+//                        }
 
-                    }
+                        if (update.getCallbackQuery().getData().equals("Cтарт1")) {
+                            //user.getGame1().btnstart(this, getButtonsInline(GAME1));
+                            sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", getButtonsReply(ENDGAME));
+                            user.setIsPlayPressed(1);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("<50")) {
+                            user.getGame1().btnlittlefifty(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("=50")) {
+                            user.getGame1().btnfifty(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals(">50")) {
+                            user.getGame1().btnoverfifty(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Cтарт2")) {
+                            sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", getButtonsReply(ENDGAME));
+                            user.setIsPlayPressed(1);
+                            //user.getGame2().btnstart(this, getButtonsInline(GAME2DROP1));
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Бросить в 1 раунде")) {
+                            user.getGame2().btndrop1(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Бросить во 2 раунде")) {
+                            user.getGame2().btndrop2(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Продолжить")) {
+                            user.getGame2().btncontinue(this);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Начать заново")) {
+                            user.getGame2().btnrestart(this);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Попытать счастья еще!")) {
+                            user.getGame2().btndrop2(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Окончить игру!")) {
+                            user.getGame2().btnrestart(this);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Cтарт3")) {
+                            sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", getButtonsReply(ENDGAME));
+                            user.setIsPlayPressed(1);
+                            //user.getGame3().btnstart(this, getButtonsInline(GAME3LR));
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("\uD83D\uDD90Левая")) {
+                            user.getGame3().btnleft(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Правая\uD83D\uDD90")) {
+                            user.getGame3().btnright(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Увеличить ставку!")) {
+                            user.getGame3().btnstart(this, getButtonsInline(GAME3LR));
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Окончить игру")) {
+                            user.getGame3().btnrestart(this);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Начать заново 3")) {
+                            user.getGame3().btnrestart(this);
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Cтарт4")) {
+                            sendMsg(id_user, "\uD83D\uDC49 Введите вашу ставку (в RUB):", getButtonsReply(ENDGAME));
+                            user.setIsPlayPressed(1);
+                            //user.getGame4().btnstart(this, getButtonsInline(GAME4LR));
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Орел")) {
+                            user.getGame4().btnleft(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Решка")) {
+                            user.getGame4().btnright(this, user.getBid());
+                            DeleteMessage(update);
+                        }
+                        if (update.getCallbackQuery().getData().equals("Начать заново 4")) {
+                            user.getGame4().btnrestart(this);
+                            DeleteMessage(update);
+                        }
 
-                    if (update.getCallbackQuery().getData().equals("Назад↩️")) {
-                        EditMessageText editMessageText = new EditMessageText();
-                        editMessageText.setChatId(String.valueOf(id_user));
-                        editMessageText.setMessageId(message.getMessageId());
-                        editMessageText.setText("\uD83D\uDC8E Введите сумму пополнения от 1000 до 50000 RUB:");
+                        callback.setChatId(String.valueOf(message.getChatId()));
+                        System.out.println("есть колбэк");
                         try {
-                            execute(editMessageText);
+                            execute(callback);
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
                         }
+                    } else System.out.println("нет колбэка");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } catch (TelegramApiException | IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
-                        isCallBack = true;
-                    }
-
-                    if (update.getCallbackQuery().getData().equals("Cтарт1"))
-                        game1.btnstart(this, getButtonsInline(GAME1));
-
-                    if (update.getCallbackQuery().getData().equals("<50")) game1.btnlittlefifty(this, bid);
-                    if (update.getCallbackQuery().getData().equals("=50")) game1.btnfifty(this, bid);
-                    if (update.getCallbackQuery().getData().equals(">50")) game1.btnoverfifty(this, bid);
-
-                    if (update.getCallbackQuery().getData().equals("Cтарт2"))
-                        game2.btnstart(this, getButtonsInline(GAME2DROP1));
-                    if (update.getCallbackQuery().getData().equals("Бросить в 1 раунде")) game2.btndrop1(this, bid);
-                    if (update.getCallbackQuery().getData().equals("Бросить во 2 раунде")) game2.btndrop2(this, bid);
-                    if (update.getCallbackQuery().getData().equals("Продолжить"))
-                        game2.btncontinue(this);
-                    if (update.getCallbackQuery().getData().equals("Начать заново"))
-                        game2.btnrestart(this);
-                    if (update.getCallbackQuery().getData().equals("Попытать счастья еще!")) game2.btndrop2(this, bid);
-                    if (update.getCallbackQuery().getData().equals("Окончить игру!"))
-                        game2.btnrestart(this);
-
-                    if (update.getCallbackQuery().getData().equals("Cтарт3"))
-                        game3.btnstart(this, getButtonsInline(GAME3LR));
-                    if (update.getCallbackQuery().getData().equals("\uD83D\uDD90Левая")) game3.btnleft(this);
-                    if (update.getCallbackQuery().getData().equals("Правая\uD83D\uDD90")) game3.btnright(this);
-                    if (update.getCallbackQuery().getData().equals("Увеличить ставку!"))
-                        game3.btnstart(this, getButtonsInline(GAME3LR));
-                    if (update.getCallbackQuery().getData().equals("Окончить игру")) game3.btnrestart(this);
-                    if (update.getCallbackQuery().getData().equals("Начать заново 3")) game3.btnrestart(this);
-
-                    if (update.getCallbackQuery().getData().equals("Cтарт4"))game4.btnstart(this, getButtonsInline(GAME4LR));
-                    if (update.getCallbackQuery().getData().equals("Орел"))game4.btnleft(this);
-                    if (update.getCallbackQuery().getData().equals("Решка"))game4.btnright(this);
-                    if (update.getCallbackQuery().getData().equals("Начать заново"))game4.btnrestart(this);
-
-                    callback.setChatId(String.valueOf(message.getChatId()));
-                    System.out.println("есть колбэк");
-                    try {
-                        execute(callback);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-                } else System.out.println("нет колбэка");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } catch (TelegramApiException | IOException | InterruptedException e) {
-                throw new RuntimeException(e);
             }
-
         }
 
 

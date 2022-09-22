@@ -1,5 +1,7 @@
 package com.company;
 
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,13 +15,17 @@ import javax.swing.plaf.BorderUIResource;
 
 public class SpringLayoutTest {
 
-    public static String token = "5318901969:AAFQJaX5pwCk5_db69kyzKbDrERp1gLnetQ";
-    public static String namebot = "like9000bot";
-    public static String passbd = "98686666SSump";
-    public static String namebd = "abobaDataBase";
-    public static String pkey = "";
-    public static String skey = "";
+    public static String token = "5405612418:AAFhYgTOD3iv2mYsJ7KjtzrqfUqY8ow8bYw";
+    public static String namebot = "PlayFortunaOfficialBot";
+    public static String passbd = "103300";
+    public static String namebd = "root";
+    public static String pkey = "48e7qUxn9T7RyYE1MVZswX1FRSbE6iyCj2gCRwwF3Dnh5XrasNTx3BGPiMsyXQFNKQhvukniQG8RTVhYm3iP75iW54VobkSvWaCPYii7mrJxz8q45RG7yzo6Wq4Z7Emaqvo5sjuCv9EAy4CrAjowdaaWBGRxAcSGH9ved4C1q2eu3TwA1UfrRYK2Z62h2";
+    public static String skey = "eyJ2ZXJzaW9uIjoiUDJQIiwiZGF0YSI6eyJwYXlpbl9tZXJjaGFudF9zaXRlX3VpZCI6Ijlidjg0OS0wMCIsInVzZXJfaWQiOiI3OTYxNDA3OTc0NCIsInNlY3JldCI6IjA5ZTEwZjZlNTcyN2ZkOWMzYzZmYThlMjA4YjA5Mjc5ZThkYTJiM2MxOWFkYzNhMmMwMGI1ZjZkNDgyNTA0OTAifX0=";
 
+    private static Bot bot;
+    private static ConnectToDB connectMain;
+    private static ConnectToDB connectMessages;
+    private static ConnectToDB connectData;
     public static void start() {
         JFrame frame = new JFrame("Вход");
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -80,19 +86,37 @@ public class SpringLayoutTest {
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                    CheckConnBD checking = new CheckConnBD(fields.get(0).getText(), fields.get(1).getText(),
-                            fields.get(2).getText(), fields.get(3).getText(),
-                            fields.get(4).getText(), fields.get(5).getText(),
-                            fields.get(6).getText(), fields.get(7).getText(),
-                            fields.get(8).getText());
-
-                    Loading loading = new Loading(checking);
-                    try {
-                        loading.start();
-                        frame.setVisible(false);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                connectMain = new ConnectToDB("jdbc:mysql://localhost:3306/" + fields.get(4).getText(), fields.get(2).getText(), fields.get(3).getText(), fields.get(5).getText());
+                connectMain.connect();
+                connectMessages = new ConnectToDB("jdbc:mysql://localhost:3306/" + fields.get(4).getText(), fields.get(2).getText(), fields.get(3).getText(), fields.get(6).getText());
+                connectMessages.connect();
+                connectData = new ConnectToDB("jdbc:mysql://localhost:3306/" + fields.get(4).getText(), fields.get(2).getText(), fields.get(3).getText(), "data");
+                connectData.connect();
+                bot = new Bot(fields.get(0).getText(), fields.get(1).getText(),
+                        fields.get(2).getText(), fields.get(3).getText(),
+                        fields.get(4).getText(), fields.get(7).getText(),
+                        fields.get(8).getText(),connectMain,connectMessages,connectData);
+                AdminPanel panel = new AdminPanel(bot,connectMain,connectMessages);
+                try {
+                    bot.startbot();
+                    panel.start();
+                } catch (TelegramApiException ex) {
+                    throw new RuntimeException(ex);
+                }
+                frame.setVisible(false);
+//                    CheckConnBD checking = new CheckConnBD(fields.get(0).getText(), fields.get(1).getText(),
+//                            fields.get(2).getText(), fields.get(3).getText(),
+//                            fields.get(4).getText(), fields.get(5).getText(),
+//                            fields.get(6).getText(), fields.get(7).getText(),
+//                            fields.get(8).getText());
+//
+//                    Loading loading = new Loading(checking);
+//                    try {
+//                        loading.start();
+//                        frame.setVisible(false);
+//                    } catch (Exception ex) {
+//                        ex.printStackTrace();
+//                    }
             }
 
         });

@@ -12,35 +12,35 @@ public class ViaWindowCreater {
     private static final String color1 = "#171E27";
     private static final String color2 = "#043458";
     private static String result;
-    private static CheckConnBD checkConnBD;
+    private static ConnectToDB connectToDB;
     private static String title;
     private static String name;
     private static String name2;
     private static Bot bot;
 
-    public ViaWindowCreater(CheckConnBD checkConnBD, String title, String name) {
-        ViaWindowCreater.checkConnBD = checkConnBD;
+    public ViaWindowCreater(ConnectToDB connectToDB, String title, String name) {
+        ViaWindowCreater.connectToDB = connectToDB;
         ViaWindowCreater.title = title;
         ViaWindowCreater.name = name;
     }
 
-    public ViaWindowCreater(CheckConnBD checkConnBD, String title, String name, String name2) {
-        ViaWindowCreater.checkConnBD = checkConnBD;
+    public ViaWindowCreater(ConnectToDB connectToDB, String title, String name, String name2) {
+        ViaWindowCreater.connectToDB = connectToDB;
         ViaWindowCreater.title = title;
         ViaWindowCreater.name = name;
         ViaWindowCreater.name2 = name2;
     }
 
-    public ViaWindowCreater(CheckConnBD checkConnBD, String title, String name, String name2, Bot bot) {
-        ViaWindowCreater.checkConnBD = checkConnBD;
+    public ViaWindowCreater(ConnectToDB connectToDB, String title, String name, String name2, Bot bot) {
+        ViaWindowCreater.connectToDB = connectToDB;
         ViaWindowCreater.title = title;
         ViaWindowCreater.name = name;
         ViaWindowCreater.name2 = name2;
         ViaWindowCreater.bot=bot;
     }
 
-    public ViaWindowCreater(CheckConnBD checkConnBD) {
-        ViaWindowCreater.checkConnBD = checkConnBD;
+    public ViaWindowCreater(ConnectToDB connectToDB) {
+        ViaWindowCreater.connectToDB = connectToDB;
     }
 
     public String messageInMainScreen(String text) {
@@ -92,71 +92,71 @@ public class ViaWindowCreater {
                 try {
                     try {
                         if (Objects.equals(col, "messages")) {
-                            result = checkConnBD.getConnectToDB().selectTable(Long.parseLong(field.getText()), col);
+                            result = connectToDB.selectTable(Long.parseLong(field.getText()), col);
                             if (!Objects.equals(result, "")) area.append(messageInMainScreen(result));
                             else area.append(messageInMainScreen("Мамонта с таким id не существует."));
                         } else if (Objects.equals(col, "nametlg"))
-                            result = checkConnBD.getConnectToDB().selectByNameS(field.getText(), col);
-                        else result = checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), col);
+                            result = connectToDB.selectByNameS(field.getText(), col);
+                        else result = connectToDB.selectByIdS(Long.parseLong(field.getText()), col);
                     } catch (SQLException exc) {
                         exc.printStackTrace();
                     }
                     String bl;
                     switch (col) {
                         case "nametlg":
-                            if (!checkConnBD.getConnectToDB().selectByNameS(result, "nametlg").equals("")) {
-                                if (Objects.equals(checkConnBD.getConnectToDB().selectByNameS(result, "black_list"), "0"))
+                            if (!connectToDB.selectByNameS(result, "nametlg").equals("")) {
+                                if (Objects.equals(connectToDB.selectByNameS(result, "black_list"), "0"))
                                     bl = "нет";
                                 else bl = "да";
                                 area.append(messageInMainScreen(
-                                        "Id телеги мамонта: " + checkConnBD.getConnectToDB().selectByNameS(result, "idtelegram")
-                                        + "\nИмя мамонта: " + checkConnBD.getConnectToDB().selectByNameS(result, "firstname")
-                                                + "\nНик телеги мамонта: " + checkConnBD.getConnectToDB().selectByNameS(result, "nametlg")
-                                        + "\nЗарегистрирован : " + checkConnBD.getConnectToDB().selectByNameS(result, "timedate")
-                                        + "\nБаланс: " + checkConnBD.getConnectToDB().selectByNameS(result, "bank")
-                                        + "\nРеквизиты : " + checkConnBD.getConnectToDB().selectByNameS(result, "reqs")
-                                        + "\nКоличество донатов : " + checkConnBD.getConnectToDB().selectByNameS(result, "nums_of_donate")
-                                        + "\nВсего надонатил : " + checkConnBD.getConnectToDB().selectByNameS(result, "sum_of_donates")
-                                        + "\nВыиграл бабла : " + checkConnBD.getConnectToDB().selectByNameS(result, "win_bank")
+                                        "Id телеги мамонта: " + connectToDB.selectByNameS(result, "idtelegram")
+                                        + "\nИмя мамонта: " + connectToDB.selectByNameS(result, "firstname")
+                                                + "\nНик телеги мамонта: " + connectToDB.selectByNameS(result, "nametlg")
+                                        + "\nЗарегистрирован : " + connectToDB.selectByNameS(result, "timedate")
+                                        + "\nБаланс: " + connectToDB.selectByNameS(result, "bank")
+                                        + "\nРеквизиты : " + connectToDB.selectByNameS(result, "reqs")
+                                        + "\nКоличество донатов : " + connectToDB.selectByNameS(result, "nums_of_donate")
+                                        + "\nВсего надонатил : " + connectToDB.selectByNameS(result, "sum_of_donates")
+                                        + "\nВыиграл бабла : " + connectToDB.selectByNameS(result, "win_bank")
                                         + "\nВ черном списке : " + bl + "."));
 
                             } else area.append(messageInMainScreen("Мамонта с таким id не существует."));
                             break;
                         case "idtelegram":
-                            if (!checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "idtelegram").equals("")) {
-                                if (Objects.equals(checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "black_list"), "0"))
+                            if (!connectToDB.selectByIdS(Long.parseLong(result), "idtelegram").equals("")) {
+                                if (Objects.equals(connectToDB.selectByIdS(Long.parseLong(result), "black_list"), "0"))
                                     bl = "нет";
                                 else bl = "да";
-                                area.append(messageInMainScreen("Id телеги мамонта: " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "idtelegram")
-                                        + "\nИмя мамонта: " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "firstname")
-                                        + "\nНик телеги мамонта: " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "nametlg")
-                                        + "\nЗарегистрирован : " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "timedate")
-                                        + "\nБаланс: " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "bank")
-                                        + "\nРеквизиты : " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "reqs")
-                                        + "\nКоличество донатов : " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "nums_of_donate")
-                                        + "\nВсего надонатил : " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "sum_of_donates")
-                                        + "\nВыиграл бабла : " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(result), "win_bank")
+                                area.append(messageInMainScreen("Id телеги мамонта: " + connectToDB.selectByIdS(Long.parseLong(result), "idtelegram")
+                                        + "\nИмя мамонта: " + connectToDB.selectByIdS(Long.parseLong(result), "firstname")
+                                        + "\nНик телеги мамонта: " + connectToDB.selectByIdS(Long.parseLong(result), "nametlg")
+                                        + "\nЗарегистрирован : " + connectToDB.selectByIdS(Long.parseLong(result), "timedate")
+                                        + "\nБаланс: " + connectToDB.selectByIdS(Long.parseLong(result), "bank")
+                                        + "\nРеквизиты : " + connectToDB.selectByIdS(Long.parseLong(result), "reqs")
+                                        + "\nКоличество донатов : " + connectToDB.selectByIdS(Long.parseLong(result), "nums_of_donate")
+                                        + "\nВсего надонатил : " + connectToDB.selectByIdS(Long.parseLong(result), "sum_of_donates")
+                                        + "\nВыиграл бабла : " + connectToDB.selectByIdS(Long.parseLong(result), "win_bank")
                                         + "\nВ черном списке : " + bl + "."));
 
                             } else area.append(messageInMainScreen("Мамонта с таким id не существует."));
                             break;
                         case "reqs":
-                            if (!checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "idtelegram").equals("")) {
-                                area.append(messageInMainScreen("Мамонт id = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
-                                        ", имя = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "nametlg") + ":" +
+                            if (!connectToDB.selectByIdS(Long.parseLong(field.getText()), "idtelegram").equals("")) {
+                                area.append(messageInMainScreen("Мамонт id = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
+                                        ", имя = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "nametlg") + ":" +
                                         "\nРеквизиты : " + result));
                             } else area.append(messageInMainScreen("Мамонта с таким id не существует."));
                             break;
                         case "black_list":
-                            if (!checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "idtelegram").equals("")) {
-                                if (checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), col).equals("0")) {
-                                    checkConnBD.getConnectToDB().updateById(Long.parseLong(field.getText()), col, "1");
-                                    area.append(messageInMainScreen("Мамонт id = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
-                                            ", имя = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "nametlg") + " успешно отправлен в бан."));
-                                } else if (checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), col).equals("1")) {
-                                    checkConnBD.getConnectToDB().updateById(Long.parseLong(field.getText()), col, "0");
-                                    area.append(messageInMainScreen("Мамонт id = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
-                                            ", имя = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(field.getText()), "nametlg") + " разбанен."));
+                            if (!connectToDB.selectByIdS(Long.parseLong(field.getText()), "idtelegram").equals("")) {
+                                if (connectToDB.selectByIdS(Long.parseLong(field.getText()), col).equals("0")) {
+                                    connectToDB.updateById(Long.parseLong(field.getText()), col, "1");
+                                    area.append(messageInMainScreen("Мамонт id = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
+                                            ", имя = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "nametlg") + " успешно отправлен в бан."));
+                                } else if (connectToDB.selectByIdS(Long.parseLong(field.getText()), col).equals("1")) {
+                                    connectToDB.updateById(Long.parseLong(field.getText()), col, "0");
+                                    area.append(messageInMainScreen("Мамонт id = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "idtelegram") +
+                                            ", имя = " + connectToDB.selectByIdS(Long.parseLong(field.getText()), "nametlg") + " разбанен."));
                                 }
                             }
                             break;
@@ -240,12 +240,12 @@ public class ViaWindowCreater {
                 frame.setVisible(false);
                 try {
                     if (Objects.equals(col, "bank")) {
-                        int lastbank = Integer.parseInt(checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(fieldid.getText()), "bank"));
-                        if (checkConnBD.getConnectToDB().updateById(Long.parseLong(fieldid.getText()), col, fieldvalue.getText())
+                        int lastbank = Integer.parseInt(connectToDB.selectByIdS(Long.parseLong(fieldid.getText()), "bank"));
+                        if (connectToDB.updateById(Long.parseLong(fieldid.getText()), col, fieldvalue.getText())
                                 &&Integer.parseInt(fieldvalue.getText())>=0) {
                             area.append(messageInMainScreen("Мамонт id = " +
-                                    checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(fieldid.getText()), "idtelegram") +
-                                    ", имя = " + checkConnBD.getConnectToDB().selectByIdS(Long.parseLong(fieldid.getText()), "nametlg") +
+                                    connectToDB.selectByIdS(Long.parseLong(fieldid.getText()), "idtelegram") +
+                                    ", имя = " + connectToDB.selectByIdS(Long.parseLong(fieldid.getText()), "nametlg") +
                                     ":\nБаланс изменен с " + lastbank + " на " + fieldvalue.getText()+ "."));
                         } else area.append(messageInMainScreen("Мамонта с таким id не существует или некорректно введен баланс."));
 

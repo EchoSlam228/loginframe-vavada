@@ -21,6 +21,7 @@ public class InlineButton implements Button{
         keyboardButtonsRow1.add(inlineKeyboardButton1);
         rowList.add(keyboardButtonsRow1);
         inlineKeyboardMarkup.setKeyboard(rowList);
+
     }
 
     public void One (String name,String callback){
@@ -28,6 +29,7 @@ public class InlineButton implements Button{
         InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
         inlineKeyboardButton1.setCallbackData(callback);
         inlineKeyboardButton1.setText(name);
+
         keyboardButtonsRow1.add(inlineKeyboardButton1);
         rowList.add(keyboardButtonsRow1);
         inlineKeyboardMarkup.setKeyboard(rowList);
